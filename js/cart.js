@@ -19,6 +19,30 @@ for(let i = 0; i < cart.length; i++){
     cartItems.appendChild(createProductItem(article))
 }
 
+const form = document.querySelector('.cart__order__form')
+
+form.addEventListener('submit', (e) => {
+    e.preventDefault()
+    fetch('http://localhost:3000/api/products/order', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            contact: {
+                firstName: e.target.firstName.value,
+                lastName: e.target.lastName.value,
+                address: e.target.address.value,
+                city: e.target.city.value,
+                email: e.target.email.value,
+            },
+            products: cart.map((product) => product._id)
+        })
+    }).then(res => res.json())
+        .then(res => {
+            window.location.href = `/html/confirmation.html?orderId=${res.orderId}`
+        })
+})
 
 function calculateTotal(){
     /*const cartTotals = cart
