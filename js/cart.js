@@ -1,10 +1,6 @@
 /**
- * 1. A partir du panier en localStorage, créer visuellement le panier (Nom, photo, quantité, prix total)
- * 2. Supprimer des produits du panier (recalcul du total)
- * 3. Modifier les quantités des produits du panier (recalcul du total)
- * 4. Valider le formulaire de commande
- * 5. Envoyer le formulaire de commande (création d'un identifiant de commande)
- * 6. Rediriger vers la page de confirmation de commande
+ * Validation du formulaire: Au click sur le bouton Commander, vérifier (avec des regex)
+ * que les champs sont valides. Si ce n'est pas valide, afficher un message d'erreur
  */
 
 
@@ -12,12 +8,29 @@
 let cart = JSON.parse(localStorage.getItem('cart') || '[]')
 //On récupère la section du DOM dans laquelle on va inclure les articles du panier
 const cartItems = document.querySelector('#cart__items')
+// On crée un dictionnaire de prix pour chaque produit
+const prices = {}
+
 //On fait une boucle sur tous les articles du panier
+const promises = []
 for(let i = 0; i < cart.length; i++){
     // Pour chaque article, on l'ajoute à la section cartItems
     const article = cart[i]
-    cartItems.appendChild(createProductItem(article))
+    const promise = fetch('http://localhost:3000/api/products/' + article._id)
+        .then(res => res.json())
+        .then(product => {
+            prices[product._id] = product.price // On renseigne le prix de chaque produit
+            cartItems.appendChild(createProductItem(article))
+        })
+    promises.push(promise)
 }
+
+/**
+ * On attend que toutes les promesses soient résolues pour calculer le total du panier
+ * */
+Promise.all(promises).then(() => {
+    calculateTotal()
+})
 
 const form = document.querySelector('.cart__order__form')
 
@@ -62,7 +75,7 @@ function calculateTotal(){
     let total = 0;
     for(let i = 0; i < cart.length; i++){
         const article = cart[i]
-        total += article.price * article.quantity
+        total += prices[article._id] * article.quantity
     }
     const totalQuantity = document.querySelector('#totalQuantity')
     const totalPrice = document.querySelector('#totalPrice')
@@ -92,7 +105,7 @@ function createProductItem(article){
     cartItemContentDescription.innerHTML = `
        <h2>${article.name}</h2>
        <p>${article.color}</p>
-       <p>${article.price} €</p>`
+       <p>${prices[article._id]} €</p>`
     cartItemContent.appendChild(cartItemContentDescription)
 
     const cartItemContentSettings = document.createElement('div')
@@ -149,4 +162,3 @@ function createProductItem(article){
     return articleElement;
 }
 
-calculateTotal()
