@@ -36,6 +36,12 @@ const form = document.querySelector('.cart__order__form')
 
 form.addEventListener('submit', (e) => {
     e.preventDefault()
+    /* Un fonction qui vérifier la validité du formulaire dans sa globalité */
+    if(!validateForm(form)){
+        return
+    }
+
+
     fetch('http://localhost:3000/api/products/order', {
         method: 'POST',
         headers: {
@@ -56,6 +62,69 @@ form.addEventListener('submit', (e) => {
             window.location.href = `/html/confirmation.html?orderId=${res.orderId}`
         })
 })
+
+function validateFirstName(form){
+    const regexName = /^[a-zA-Z éèêë-]+$/gmi;
+    const firstName = form.firstName.value
+    const firstNameError = document.querySelector('#firstNameErrorMsg')
+    firstNameError.innerHTML = ''
+    if(!regexName.test(firstName)){
+        firstNameError.innerHTML = "Votre prénom n'est pas valide"
+        return false
+    }
+    return true
+}
+
+function validateLastName(form){
+    const regexName = /^[a-zA-Z éèêë-]+$/gmi;
+    const lastName = form.lastName.value
+    const lastNameError = document.querySelector('#lastNameErrorMsg')
+    lastNameError.innerHTML = ''
+    if(!regexName.test(lastName)){
+        lastNameError.innerHTML = "Votre nom n'est pas valide"
+        return false
+    }
+    return true
+}
+
+function validateAddress(){
+    return true
+}
+
+function validateCity(){
+    return true
+}
+
+function validateEmail(){
+    return true
+}
+
+/*
+* Fonction qui vérifie chaque champs individuellement
+* */
+function validateForm(form){
+    /* S'assurer qu'il y a au moins un produit dans le panier*/
+    if(cart.length === 0){
+        alert('Aucun produit dans le panier')
+        return false
+    }
+
+    const isValidFirstName = validateFirstName(form)
+    const isValidLastName = validateLastName(form)
+    const isValidAddress = validateAddress(form)
+    const isValidCity = validateCity(form)
+    const isValidEmail = validateEmail(form)
+
+    /*
+    * Retourne true si tous les champs sont valides, false sinon
+    * */
+    return (isValidFirstName &&
+        isValidLastName &&
+        isValidAddress &&
+        isValidCity &&
+        isValidEmail
+    )
+}
 
 function calculateTotal(){
     /*const cartTotals = cart
