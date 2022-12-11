@@ -9,20 +9,36 @@
 
 
 // On récupère le panier du localStorage
-let cart = JSON.parse(localStorage.getItem('cart') || '[]')
+const cart = JSON.parse(localStorage.getItem('cart') || '[]')
 //On récupère la section du DOM dans laquelle on va inclure les articles du panier
 const cartItems = document.querySelector('#cart__items')
 //On fait une boucle sur tous les articles du panier
 for(let i = 0; i < cart.length; i++){
     // Pour chaque article, on l'ajoute à la section cartItems
     const article = cart[i]
-    cartItems.appendChild(createProductItem(article))
+    cartItems.innerHTML += createProductItem(article)
+    // TODO: Ajout des évènements
+    /*const articleDOM = document.querySelector(`[data-id="${article._id}"][data-color="${article.color}"]`)
+    const deleteButton = articleDOM.querySelector('.deleteItem')
+    deleteButton.addEventListener('click', function(){
+        console.log('click')
+    })*/
 }
+
+
+
+
 
 const form = document.querySelector('.cart__order__form')
 
 form.addEventListener('submit', (e) => {
     e.preventDefault()
+
+     /* Un fonction qui vérifier la validité du formulaire dans sa globalité */
+     if(!validateForm(form)){
+        return
+    }
+
     fetch('http://localhost:3000/api/products/order', {
         method: 'POST',
         headers: {
@@ -43,6 +59,95 @@ form.addEventListener('submit', (e) => {
             window.location.href = `/html/confirmation.html?orderId=${res.orderId}`
         })
 })
+
+
+function validateFirstName(form){
+    const regexName = /^[a-zA-Z éèêëôîâ-]+([ \-']?[a-zA-Z éèêëôîâ-]+[ \-']?[a-zA-Z éèêëôîâ-]+[ \-']?)[a-zA-Z éèêëôîâ-]+$/gmi;
+    const firstName = form.firstName.value
+    const firstNameError = document.querySelector('#firstNameErrorMsg')
+    firstNameError.innerHTML = ''
+    if(!regexName.test(firstName)){
+        firstNameError.innerHTML = "Votre prénom n'est pas valide"
+        return false
+    }
+    return true
+}
+
+function validateLastName(form){
+    const regexName = /^[a-zA-Z éèêëôîâ-]+([ \-']?[a-zA-Z éèêëôîâ-]+[ \-']?[a-zA-Z éèêëôîâ-]+[ \-']?)[a-zA-Z éèêëôîâ-]$/gmi;
+    const lastName = form.lastName.value
+    const lastNameError = document.querySelector('#lastNameErrorMsg')
+    lastNameError.innerHTML = ''
+    if(!regexName.test(lastName)){
+        lastNameError.innerHTML = "Votre nom n'est pas valide"
+        return false
+    }
+    return true
+}
+
+function validateAddress(){
+    const regexName = /^[a-zA-Z\s]{5,50}+$/gmi;
+    const address = form.address.value
+    const addressErrorMsg = document.querySelector('#addressErrorMsg')
+    addressErrorMsg.innerHTML = ''
+    if(!regexName.test(address)){
+        addressErrorMsg.innerHTML = "l'adresse doit contenir des lettres sans ponctuation ainsi que des chiffres"
+        return false
+    }
+    return true
+}
+
+function validateCity(){
+    const regexName = /^[a-zA-Z éèêëôîâ-]+([ \-']?[a-zA-Z éèêëôîâ-]+[ \-']?[a-zA-Z éèêëôîâ-]+[ \-']?)[a-zA-Z éèêëôîâ-]+$/gmi;
+    const city = form.city.value
+    const cityErrorMsg = document.querySelector('#cityErrorMsg')
+    addressErrorMsg.innerHTML = ''
+    if(!regexName.test(city)){
+        cityErrorMsg.innerHTML = "contenu invalide le champs doit contenir que des lettres"
+        return false
+    }
+    return true
+}
+
+function validateEmail(){
+    const regexName = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    const email = form.email.value
+    const emailError = document.querySelector('#emailErrorMsg')
+    emailError.innerHTML = ''
+    if(!regexName.test(email)){
+        emailError.innerHTML = "Votre mail n'est pas valide"
+        return false
+    }
+    
+    return true
+}
+
+/*
+* Fonction qui vérifie chaque champs individuellement
+* */
+function validateForm(form){
+    /* S'assurer qu'il y a au moins un produit dans le panier*/
+    if(cart.length === 0){
+        alert('Aucun produit dans le panier')
+        return false
+    }
+
+    const isValidFirstName = validateFirstName(form)
+    const isValidLastName = validateLastName(form)
+    const isValidAddress = validateAddress(form)
+    const isValidCity = validateCity(form)
+    const isValidEmail = validateEmail(form)
+
+    /*
+    * Retourne true si tous les champs sont valides, false sinon
+    * */
+    return (isValidFirstName &&
+        isValidLastName &&
+        isValidAddress &&
+        isValidCity &&
+        isValidEmail
+    )
+}
 
 function calculateTotal(){
     /*const cartTotals = cart
