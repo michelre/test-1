@@ -59,7 +59,6 @@ function addToCartEvent(product){
 
     product.quantity = parseInt(quantity.value)
     product.color = color.value
-    delete product.price
 
     const cart = JSON.parse(localStorage.getItem('cart') || '[]')
     // Je recherche un produit dans le panier qui a déjà le même identifiant et la même couleur

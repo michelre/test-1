@@ -13,7 +13,7 @@ const prices = {}
 
 //On fait une boucle sur tous les articles du panier
 const promises = []
-for(let i = 0; i < cart.length; i++){
+for (let i = 0; i < cart.length; i++) {
     // Pour chaque article, on l'ajoute à la section cartItems
     const article = cart[i]
     const promise = fetch('http://localhost:3000/api/products/' + article._id)
@@ -32,15 +32,16 @@ Promise.all(promises).then(() => {
     calculateTotal()
 })
 
+
 const form = document.querySelector('.cart__order__form')
 
 form.addEventListener('submit', (e) => {
     e.preventDefault()
+
     /* Un fonction qui vérifier la validité du formulaire dans sa globalité */
-    if(!validateForm(form)){
+    if (!validateForm(form)) {
         return
     }
-
 
     fetch('http://localhost:3000/api/products/order', {
         method: 'POST',
@@ -63,48 +64,74 @@ form.addEventListener('submit', (e) => {
         })
 })
 
-function validateFirstName(form){
-    const regexName = /^[a-zA-Z éèêë-]+$/gmi;
+
+function validateFirstName(form) {
+    const regexName = /^[a-zA-Z éèêëôîâ-]+([ \-']?[a-zA-Z éèêëôîâ-]+[ \-']?[a-zA-Z éèêëôîâ-]+[ \-']?)[a-zA-Z éèêëôîâ-]+$/gmi;
     const firstName = form.firstName.value
     const firstNameError = document.querySelector('#firstNameErrorMsg')
     firstNameError.innerHTML = ''
-    if(!regexName.test(firstName)){
+    if (!regexName.test(firstName)) {
         firstNameError.innerHTML = "Votre prénom n'est pas valide"
         return false
     }
     return true
 }
 
-function validateLastName(form){
-    const regexName = /^[a-zA-Z éèêë-]+$/gmi;
+function validateLastName(form) {
+    const regexName = /^[a-zA-Z éèêëôîâ-]+([ \-']?[a-zA-Z éèêëôîâ-]+[ \-']?[a-zA-Z éèêëôîâ-]+[ \-']?)[a-zA-Z éèêëôîâ-]$/gmi;
     const lastName = form.lastName.value
     const lastNameError = document.querySelector('#lastNameErrorMsg')
     lastNameError.innerHTML = ''
-    if(!regexName.test(lastName)){
+    if (!regexName.test(lastName)) {
         lastNameError.innerHTML = "Votre nom n'est pas valide"
         return false
     }
     return true
 }
 
-function validateAddress(){
+function validateAddress(form) {
+    const regexName = /^[a-zA-Z\s]{5,50}$/g;
+    const address = form.address.value
+    const addressErrorMsg = document.querySelector('#addressErrorMsg')
+    addressErrorMsg.innerHTML = ''
+    if (!regexName.test(address)) {
+        addressErrorMsg.innerHTML = "L'adresse doit contenir des lettres sans ponctuation ainsi que des chiffres"
+        return false
+    }
     return true
 }
 
-function validateCity(){
+function validateCity(form) {
+    const regexName = /^[a-zA-Z éèêëôîâ-]+([ \-']?[a-zA-Z éèêëôîâ-]+[ \-']?[a-zA-Z éèêëôîâ-]+[ \-']?)[a-zA-Z éèêëôîâ-]+$/gmi;
+    const city = form.city.value
+    const cityErrorMsg = document.querySelector('#cityErrorMsg')
+    cityErrorMsg.innerHTML = ''
+    if (!regexName.test(city)) {
+        cityErrorMsg.innerHTML = "contenu invalide le champs doit contenir que des lettres"
+        return false
+    }
     return true
 }
 
-function validateEmail(){
+function validateEmail(form) {
+    const regexName = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    const email = form.email.value
+    const emailError = document.querySelector('#emailErrorMsg')
+    emailError.innerHTML = ''
+    if (!regexName.test(email)) {
+        emailError.innerHTML = "Votre mail n'est pas valide"
+        return false
+    }
+
     return true
 }
 
 /*
 * Fonction qui vérifie chaque champs individuellement
 * */
-function validateForm(form){
+function validateForm(form) {
     /* S'assurer qu'il y a au moins un produit dans le panier*/
-    if(cart.length === 0){
+    if (cart.length === 0) {
         alert('Aucun produit dans le panier')
         return false
     }
@@ -126,7 +153,7 @@ function validateForm(form){
     )
 }
 
-function calculateTotal(){
+function calculateTotal() {
     /*const cartTotals = cart
         .map(function(article){
             return article.price * article.quantity
@@ -142,7 +169,7 @@ function calculateTotal(){
     */
 
     let total = 0;
-    for(let i = 0; i < cart.length; i++){
+    for (let i = 0; i < cart.length; i++) {
         const article = cart[i]
         total += prices[article._id] * article.quantity
     }
@@ -157,7 +184,7 @@ function calculateTotal(){
  * @param article
  * @returns {string}
  */
-function createProductItem(article){
+function createProductItem(article) {
     const articleElement = document.createElement('article')
     articleElement.classList.add('cart__item')
     articleElement.setAttribute('data-id', article._id)
@@ -230,4 +257,3 @@ function createProductItem(article){
 
     return articleElement;
 }
-
