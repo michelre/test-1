@@ -1,4 +1,3 @@
-// Appel ajax (avec fetch) sur le serveur pour récupérer les produits
 fetch('http://localhost:3000/api/products')
     .then(function(response){
         return response.json()

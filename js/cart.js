@@ -1,46 +1,43 @@
 /**
- * Validation du formulaire: Au click sur le bouton Commander, vérifier (avec des regex)
- * que les champs sont valides. Si ce n'est pas valide, afficher un message d'erreur
+ * 1. A partir du panier en localStorage, créer visuellement le panier (Nom, photo, quantité, prix total)
+ * 2. Supprimer des produits du panier (recalcul du total)
+ * 3. Modifier les quantités des produits du panier (recalcul du total)
+ * 4. Valider le formulaire de commande
+ * 5. Envoyer le formulaire de commande (création d'un identifiant de commande)
+ * 6. Rediriger vers la page de confirmation de commande
  */
 
 
 // On récupère le panier du localStorage
-let cart = JSON.parse(localStorage.getItem('cart') || '[]')
+const cart = JSON.parse(localStorage.getItem('cart') || '[]')
 //On récupère la section du DOM dans laquelle on va inclure les articles du panier
 const cartItems = document.querySelector('#cart__items')
-// On crée un dictionnaire de prix pour chaque produit
-const prices = {}
-
 //On fait une boucle sur tous les articles du panier
-const promises = []
 for(let i = 0; i < cart.length; i++){
     // Pour chaque article, on l'ajoute à la section cartItems
     const article = cart[i]
-    const promise = fetch('http://localhost:3000/api/products/' + article._id)
-        .then(res => res.json())
-        .then(product => {
-            prices[product._id] = product.price // On renseigne le prix de chaque produit
-            cartItems.appendChild(createProductItem(article))
-        })
-    promises.push(promise)
+    cartItems.innerHTML += createProductItem(article)
+    // TODO: Ajout des évènements
+    /*const articleDOM = document.querySelector(`[data-id="${article._id}"][data-color="${article.color}"]`)
+    const deleteButton = articleDOM.querySelector('.deleteItem')
+    deleteButton.addEventListener('click', function(){
+        console.log('click')
+    })*/
 }
 
-/**
- * On attend que toutes les promesses soient résolues pour calculer le total du panier
- * */
-Promise.all(promises).then(() => {
-    calculateTotal()
-})
+
+
+
 
 const form = document.querySelector('.cart__order__form')
 
 form.addEventListener('submit', (e) => {
     e.preventDefault()
-    /* Un fonction qui vérifier la validité du formulaire dans sa globalité */
-    if(!validateForm(form)){
+
+     /* Un fonction qui vérifier la validité du formulaire dans sa globalité */
+     if(!validateForm(form)){
         return
     }
-
 
     fetch('http://localhost:3000/api/products/order', {
         method: 'POST',
@@ -63,8 +60,9 @@ form.addEventListener('submit', (e) => {
         })
 })
 
+
 function validateFirstName(form){
-    const regexName = /^[a-zA-Z éèêë-]+$/gmi;
+    const regexName = /^[a-zA-Z éèêëôîâ-]+([ \-']?[a-zA-Z éèêëôîâ-]+[ \-']?[a-zA-Z éèêëôîâ-]+[ \-']?)[a-zA-Z éèêëôîâ-]+$/gmi;
     const firstName = form.firstName.value
     const firstNameError = document.querySelector('#firstNameErrorMsg')
     firstNameError.innerHTML = ''
@@ -76,7 +74,7 @@ function validateFirstName(form){
 }
 
 function validateLastName(form){
-    const regexName = /^[a-zA-Z éèêë-]+$/gmi;
+    const regexName = /^[a-zA-Z éèêëôîâ-]+([ \-']?[a-zA-Z éèêëôîâ-]+[ \-']?[a-zA-Z éèêëôîâ-]+[ \-']?)[a-zA-Z éèêëôîâ-]$/gmi;
     const lastName = form.lastName.value
     const lastNameError = document.querySelector('#lastNameErrorMsg')
     lastNameError.innerHTML = ''
@@ -88,14 +86,39 @@ function validateLastName(form){
 }
 
 function validateAddress(){
+    const regexName = /^[a-zA-Z\s]{5,50}+$/gmi;
+    const address = form.address.value
+    const addressErrorMsg = document.querySelector('#addressErrorMsg')
+    addressErrorMsg.innerHTML = ''
+    if(!regexName.test(address)){
+        addressErrorMsg.innerHTML = "l'adresse doit contenir des lettres sans ponctuation ainsi que des chiffres"
+        return false
+    }
     return true
 }
 
 function validateCity(){
+    const regexName = /^[a-zA-Z éèêëôîâ-]+([ \-']?[a-zA-Z éèêëôîâ-]+[ \-']?[a-zA-Z éèêëôîâ-]+[ \-']?)[a-zA-Z éèêëôîâ-]+$/gmi;
+    const city = form.city.value
+    const cityErrorMsg = document.querySelector('#cityErrorMsg')
+    addressErrorMsg.innerHTML = ''
+    if(!regexName.test(city)){
+        cityErrorMsg.innerHTML = "contenu invalide le champs doit contenir que des lettres"
+        return false
+    }
     return true
 }
 
 function validateEmail(){
+    const regexName = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    const email = form.email.value
+    const emailError = document.querySelector('#emailErrorMsg')
+    emailError.innerHTML = ''
+    if(!regexName.test(email)){
+        emailError.innerHTML = "Votre mail n'est pas valide"
+        return false
+    }
+    
     return true
 }
 
@@ -144,7 +167,7 @@ function calculateTotal(){
     let total = 0;
     for(let i = 0; i < cart.length; i++){
         const article = cart[i]
-        total += prices[article._id] * article.quantity
+        total += article.price * article.quantity
     }
     const totalQuantity = document.querySelector('#totalQuantity')
     const totalPrice = document.querySelector('#totalPrice')
@@ -174,7 +197,7 @@ function createProductItem(article){
     cartItemContentDescription.innerHTML = `
        <h2>${article.name}</h2>
        <p>${article.color}</p>
-       <p>${prices[article._id]} €</p>`
+       <p>${article.price} €</p>`
     cartItemContent.appendChild(cartItemContentDescription)
 
     const cartItemContentSettings = document.createElement('div')
@@ -231,3 +254,4 @@ function createProductItem(article){
     return articleElement;
 }
 
+calculateTotal()
