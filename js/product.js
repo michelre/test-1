@@ -1,6 +1,16 @@
 // On parse l'URL pour en déduire le paramètre id
 const url = new URL(window.location.href);
 
+/**
+ * 1. Fetch permet de faire un appel Ajax
+ * 2. Permet de faire un appel à l'API pour récupérer ou envoyer des données
+ * 3. Fetch avec méthode GET (par défaut) pour récupérer des données
+ * 4. Fetch avec méthode POST (voir panier) pour envoyer des données
+ * 5. Le résultat de l'appel fetch est une promesse
+ * 6. Cette promesse contient une réponse. On accède au JSON de cette réponse
+ * 7. Les données JSON contiennent les données renvoyées par l'API
+ */
+
 // On appel l'API pour récupérer les informations du produit
 fetch('http://localhost:3000/api/products/' + url.searchParams.get('id'))
     .then(function(res){
@@ -69,6 +79,7 @@ function addToCartEvent(product){
     if(productExists){
         productExists.quantity += product.quantity
     } else {
+        delete product.price
         cart.push(product)
     }
 

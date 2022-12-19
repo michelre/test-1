@@ -60,6 +60,7 @@ form.addEventListener('submit', (e) => {
         })
     }).then(res => res.json())
         .then(res => {
+            localStorage.removeItem('cart')
             window.location.href = `/html/confirmation.html?orderId=${res.orderId}`
         })
 })
